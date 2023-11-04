@@ -1,13 +1,17 @@
-require('@nomicfoundation/hardhat-toolbox')
-require('dotenv').config()
+require("@nomicfoundation/hardhat-toolbox");
+require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: '0.8.12',
+  solidity: "0.8.12",
+  defaultNetwork: "mumbai",
   networks: {
+    hardhat: {
+      chainId: 1337,
+    },
     mumbai: {
-      url: 'https://rpc-mumbai.maticvigil.com',
+      url: "https://rpc-mumbai.maticvigil.com",
       accounts: [process.env.PRIVATE_KEY],
     },
   },
-}
+};
