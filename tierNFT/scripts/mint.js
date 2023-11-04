@@ -3,7 +3,7 @@ const hre = require("hardhat");
 /** Set contract and collection name **/
 const CONTRACT_NAME = "TierNFT";
 // my contract address was: 0x5269eEBE399C58A24D11a0d7437F1d54Dc57a8dC
-const CONTRACT_ADDRESS = "";
+const CONTRACT_ADDRESS = "0x31c59b803de54e972A5dB607c45a1e1abCd83BbF";
 const VALUE_TIER_0 = "0.01"; // in ethers/matic
 const VALUE_TIER_1 = "0.02"; // in ethers/matic
 const VALUE_TIER_2 = "0.05"; // in ethers/matic
@@ -38,7 +38,10 @@ async function main() {
   console.log("Minted a Tier 2 NFT!");
 
   let totalSupply = await contract.totalSupply();
-  console.log("Collection's new totalSupply: ", totalSupply);
+  console.log(
+    "Collection's new totalSupply: ",
+    hre.ethers.formatUnits(totalSupply, "wei")
+  );
 }
 
 /** Run Main function - Do not change **/
