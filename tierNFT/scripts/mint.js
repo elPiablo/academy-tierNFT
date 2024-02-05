@@ -3,7 +3,7 @@ const hre = require("hardhat");
 /** Set contract and collection name **/
 const CONTRACT_NAME = "TierNFT";
 // my contract address was: 0x5269eEBE399C58A24D11a0d7437F1d54Dc57a8dC
-const CONTRACT_ADDRESS = "0x31c59b803de54e972A5dB607c45a1e1abCd83BbF";
+const CONTRACT_ADDRESS = "0x5794C3de7A59587048B76060D282476e12a8AFF8";
 const VALUE_TIER_0 = "0.01"; // in ethers/matic
 const VALUE_TIER_1 = "0.02"; // in ethers/matic
 const VALUE_TIER_2 = "0.05"; // in ethers/matic
@@ -17,21 +17,21 @@ async function main() {
   console.log(`Attached contract: ${await contract.getAddress()}`);
 
   // Call the mint function for Tier 0
-  let txn = await contract.mint({
+  let txn = await contract.safeMint({
     value: hre.ethers.parseEther(VALUE_TIER_0),
   });
   await txn.wait(); // Wait for the NFT to be minted
   console.log("Minted a Tier 0 NFT!");
 
   // Call the mint function for Tier 1
-  txn = await contract.mint({
+  txn = await contract.safeMint({
     value: hre.ethers.parseEther(VALUE_TIER_1),
   });
   await txn.wait(); // Wait for the NFT to be minted
   console.log("Minted a Tier 1 NFT!");
 
   // Call the mint function for Tier 2
-  txn = await contract.mint({
+  txn = await contract.safeMint({
     value: hre.ethers.parseEther(VALUE_TIER_2),
   });
   await txn.wait(); // Wait for the NFT to be minted

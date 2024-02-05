@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.12;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -16,14 +18,17 @@ uint256 constant TIER_VALUE_0 = 0.01 ether;
 uint256 constant TIER_VALUE_1 = 0.02 ether;
 uint256 constant TIER_VALUE_2 = 0.05 ether;
 
-contract TierNFT is ERC721, Ownable {
-    uint256 public totalSupply;
+contract TierNFT is ERC721, Ownable, ERC721Enumerable, ERC721URIStorage {
     mapping(uint256 => uint256) public tokenTier;
 
-    constructor(string memory _name, string memory _symbol)
-        ERC721(_name, _symbol) {}
+    uint256 private _nextTokenId;
 
-    function mint() public payable {
+    constructor(
+        string memory _name,
+        string memory _symbol
+    ) ERC721(_name, _symbol) Ownable(msg.sender) {}
+
+    function safeMint() public payable {
         require(
             msg.value >= TIER_VALUE_0,
             "Not enough value for the minimum Tier"
@@ -33,20 +38,30 @@ contract TierNFT is ERC721, Ownable {
         if (msg.value >= TIER_VALUE_2) tierId = 2;
         else if (msg.value >= TIER_VALUE_1) tierId = 1;
 
-        totalSupply++;
-        _safeMint(msg.sender, totalSupply);
-        tokenTier[totalSupply] = tierId;
+        uint256 tokenId = _nextTokenId++;
+        _safeMint(msg.sender, tokenId);
+        _setTokenURI(tokenId);
+        tokenTier[tokenId] = tierId;
+    }
+
+    function _update(
+        address to,
+        uint256 tokenId,
+        address auth
+    ) internal override(ERC721, ERC721Enumerable) returns (address) {
+        return super._update(to, tokenId, auth);
+    }
+
+    function _increaseBalance(
+        address account,
+        uint128 value
+    ) internal override(ERC721, ERC721Enumerable) {
+        super._increaseBalance(account, value);
     }
 
     // Create the tokenURI json on the fly without creating files individually
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        virtual
-        override
-        returns (string memory)
-    {
-        require(_exists(tokenId), "Nonexistent token");
+    function _setTokenURI(uint256 tokenId) public virtual {
+        require(tokenId <= totalSupply(), "Nonexistent token");
 
         string memory tierName = tokenTier[tokenId] == 2
             ? TIER_NAME_2
@@ -76,7 +91,16 @@ contract TierNFT is ERC721, Ownable {
             )
         );
 
-        return string(abi.encodePacked("data:application/json;base64,", json));
+        _setTokenURI(
+            tokenId,
+            string(abi.encodePacked("data:application/json;base64,", json))
+        );
+    }
+
+    function tokenURI(
+        uint256 tokenId
+    ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+        return super.tokenURI(tokenId);
     }
 
     // Function to withdraw funds from contract
@@ -88,5 +112,16 @@ contract TierNFT is ERC721, Ownable {
         // Withdraw funds.
         (bool success, ) = payable(owner()).call{value: balance}("");
         require(success, "Withdraw failed");
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    )
+        public
+        view
+        override(ERC721, ERC721Enumerable, ERC721URIStorage)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 }
